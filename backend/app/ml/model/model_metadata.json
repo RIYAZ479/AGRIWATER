@@ -1,0 +1,35 @@
+{
+    "model_name": "RandomForestRegressor",
+    "algorithm": "Random Forest Regressor (Ensemble 120 Estimators)",
+    "training_samples": 4000,
+    "test_samples": 1000,
+    "test_metrics": {
+        "mae_liters": 496.95,
+        "rmse_liters": 792.96,
+        "r2_score": 0.9443
+    },
+    "categorical_features": [
+        "crop_type",
+        "growth_stage",
+        "soil_type"
+    ],
+    "numerical_features": [
+        "temperature",
+        "humidity",
+        "rainfall",
+        "soil_moisture",
+        "farm_area",
+        "crop_coefficient"
+    ],
+    "target_variable": "water_requirement_liters",
+    "top_feature_importances": {
+        "farm_area": 0.3214,
+        "soil_moisture": 0.3165,
+        "crop_coefficient": 0.1842,
+        "growth_stage_Seedling": 0.0376,
+        "growth_stage_Fruiting": 0.0372,
+        "soil_type_sandy": 0.026,
+        "rainfall": 0.0244,
+        "temperature": 0.0115
+    }
+}

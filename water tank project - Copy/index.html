@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriWater AI — Multi-Tank Monitoring, Telemetry & Smart Irrigation Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar glass-panel">
+            <div class="logo-area">
+                <i class="fa-solid fa-seedling gradient-icon"></i>
+                <div>
+                    <h2>AgriWater AI</h2>
+                    <span class="logo-tag">Smart IoT & Multi-Tank AI</span>
+                </div>
+            </div>
+
+            <!-- Page-based Navigation Menu -->
+            <nav class="nav-menu">
+                <a href="#dashboard" class="nav-item active" data-page="dashboard">
+                    <i class="fa-solid fa-border-all"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#tanks" class="nav-item" data-page="tanks">
+                    <i class="fa-solid fa-arrows-up-down-left-right"></i>
+                    <span>Reservoirs & Tanks</span>
+                </a>
+                <a href="#data" class="nav-item" data-page="data">
+                    <i class="fa-solid fa-database"></i>
+                    <span>Telemetry & Data</span>
+                </a>
+                <a href="#farm" class="nav-item" data-page="farm">
+                    <i class="fa-solid fa-wheat-awn"></i>
+                    <span>Farm Management</span>
+                </a>
+                <a href="#irrigation" class="nav-item" data-page="irrigation">
+                    <i class="fa-solid fa-droplet"></i>
+                    <span>Irrigation Plan</span>
+                </a>
+                <a href="#ai" class="nav-item" data-page="ai">
+                    <i class="fa-solid fa-brain"></i>
+                    <span>AI Insights</span>
+                </a>
+                <a href="#weather" class="nav-item" data-page="weather">
+                    <i class="fa-solid fa-cloud-sun"></i>
+                    <span>Weather</span>
+                </a>
+                <a href="#alerts" class="nav-item" data-page="alerts">
+                    <i class="fa-solid fa-bell"></i>
+                    <span>Alerts</span>
+                    <span class="nav-badge" id="nav-alerts-badge">0</span>
+                </a>
+                <a href="#device" class="nav-item" data-page="device">
+                    <i class="fa-solid fa-microchip"></i>
+                    <span>Arduino / Device</span>
+                </a>
+                <a href="#settings" class="nav-item" data-page="settings">
+                    <i class="fa-solid fa-gear"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button id="theme-toggle" class="icon-btn theme-btn" aria-label="Toggle Theme">
+                    <i class="fa-solid fa-moon"></i> <span>Dark Mode</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Dynamic Topbar -->
+            <header class="topbar">
+                <div class="page-title">
+                    <div class="breadcrumb-trail">
+                        <span class="breadcrumb-root">AgriWater AI</span>
+                        <i class="fa-solid fa-chevron-right breadcrumb-separator"></i>
+                        <span class="breadcrumb-current" id="page-breadcrumb">Dashboard</span>
+                    </div>
+                    <h1 id="page-heading">Dashboard Overview</h1>
+                    <p class="subtitle" id="page-subheading">IoT Ultrasonic Water Monitoring + AI Smart Irrigation Recommendation</p>
+                </div>
+                <div class="topbar-actions">
+                    <button id="mock-toggle-btn" class="btn-secondary mock-btn" title="Toggle Mock Sensor Stream">
+                        <i class="fa-solid fa-play"></i> <span id="mock-btn-text">Simulation Mode</span>
+                    </button>
+                    <div class="connection-status" id="connection-status">
+                        <span class="status-dot disconnected"></span>
+                        <span class="status-text">Disconnected</span>
+                    </div>
+                    <button id="connect-btn" class="btn-primary">
+                        <i class="fa-brands fa-usb"></i> Connect Device
+                    </button>
+                </div>
+            </header>
+
+            <!-- Container for All Pages -->
+            <main class="pages-container">
+                
+                <!-- ============================================================== -->
+                <!-- PAGE 1: DASHBOARD OVERVIEW                                      -->
+                <!-- ============================================================== -->
+                <section class="page-view active" id="page-dashboard" data-page="dashboard">
+                    <!-- Primary Metrics Row -->
+                    <div class="metrics-row">
+                        <div class="metric-card glass-panel">
+                            <div class="card-icon blue"><i class="fa-solid fa-ruler-vertical"></i></div>
+                            <div class="card-details">
+                                <h3>Reservoir Level</h3>
+                                <div class="value"><span id="water-level-val">0.0</span> <span class="unit">cm</span></div>
+                            </div>
+                        </div>
+                        <div class="metric-card glass-panel">
+                            <div class="card-icon cyan"><i class="fa-solid fa-arrows-up-down"></i></div>
+                            <div class="card-details">
+                                <h3>Distance to Sensor</h3>
+                                <div class="value"><span id="distance-val">0.0</span> <span class="unit">cm</span></div>
+                            </div>
+                        </div>
+                        <div class="metric-card glass-panel">
+                            <div class="card-icon green"><i class="fa-solid fa-clock"></i></div>
+                            <div class="card-details">
+                                <h3>Est. Time to Full</h3>
+                                <div class="value"><span id="est-time">--</span></div>
+                            </div>
+                        </div>
+                        <div class="metric-card glass-panel">
+                            <div class="card-icon white"><i class="fa-solid fa-shield-halved"></i></div>
+                            <div class="card-details">
+                                <h3>Reservoir Status</h3>
+                                <div class="value"><span id="status-val" class="status-badge safe">Normal</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Glance Sub-metrics -->
+                    <div class="dashboard-quick-row">
+                        <div class="quick-card glass-panel">
+                            <div class="quick-icon earth"><i class="fa-solid fa-layer-group"></i></div>
+                            <div class="quick-info">
+                                <span class="quick-label">Soil Moisture</span>
+                                <strong class="quick-value"><span id="dash-soil-moisture">38</span>% <small id="dash-soil-status" class="badge-pill optimal">Optimal</small></strong>
+                            </div>
+                        </div>
+                        <div class="quick-card glass-panel">
+                            <div class="quick-icon water"><i class="fa-solid fa-glass-water"></i></div>
+                            <div class="quick-info">
+                                <span class="quick-label">Available Water</span>
+                                <strong class="quick-value" id="dash-avail-water">0 L</strong>
+                            </div>
+                        </div>
+                        <div class="quick-card glass-panel">
+                            <div class="quick-icon plant"><i class="fa-solid fa-wheat-awn"></i></div>
+                            <div class="quick-info">
+                                <span class="quick-label">Active Crop & Stage</span>
+                                <strong class="quick-value" id="dash-crop-stage">Tomato · Flowering</strong>
+                            </div>
+                        </div>
+                        <div class="quick-card glass-panel">
+                            <div class="quick-icon sun"><i class="fa-solid fa-cloud-sun"></i></div>
+                            <div class="quick-info">
+                                <span class="quick-label">Current Weather</span>
+                                <strong class="quick-value" id="dash-weather-quick">32°C · 55% RH</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Farm Tank Fleet Overview Card -->
+                    <div class="tank-fleet-overview glass-panel">
+                        <div class="panel-header">
+                            <div>
+                                <h2><i class="fa-solid fa-cubes-stacked gradient-text"></i> Farm Reservoir Fleet Status</h2>
+                                <p class="section-subtitle">Real-time status of all water storage assets across farm sectors</p>
+                            </div>
+                            <button class="btn-secondary-small" data-goto="tanks">
+                                <i class="fa-solid fa-up-right-from-square"></i> Open Tanks Hub
+                            </button>
+                        </div>
+                        <div class="tank-fleet-grid">
+                            <!-- Tank 1 Card -->
+                            <div class="tank-fleet-card" data-goto-tank="1">
+                                <div class="tank-fleet-top">
+                                    <div class="tank-fleet-info">
+                                        <h4>Tank 1: Main Reservoir</h4>
+                                        <span class="tank-zone-tag">North Sector · Active Drip Feed</span>
+                                    </div>
+                                    <span class="status-badge safe" id="tank1-status-pill">Active</span>
+                                </div>
+                                <div class="tank-progress-bar">
+                                    <div class="tank-progress-fill" id="tank1-fleet-bar" style="width: 55%;"></div>
+                                </div>
+                                <div class="tank-fleet-meta">
+                                    <span>Level: <strong id="tank1-fleet-level">55% (55 cm)</strong></span>
+                                    <span>Storage: <strong id="tank1-fleet-vol">5,500 / 10,000 L</strong></span>
+                                </div>
+                                <button class="btn-outline-small" data-goto-tank="1">Inspect Tank 1 →</button>
+                            </div>
+
+                            <!-- Tank 2 Card -->
+                            <div class="tank-fleet-card" data-goto-tank="2">
+                                <div class="tank-fleet-top">
+                                    <div class="tank-fleet-info">
+                                        <h4>Tank 2: Secondary Well</h4>
+                                        <span class="tank-zone-tag">South Orchard · Borewell Buffer</span>
+                                    </div>
+                                    <span class="status-badge safe" id="tank2-status-pill">Ready</span>
+                                </div>
+                                <div class="tank-progress-bar">
+                                    <div class="tank-progress-fill cyan" id="tank2-fleet-bar" style="width: 72%;"></div>
+                                </div>
+                                <div class="tank-fleet-meta">
+                                    <span>Level: <strong id="tank2-fleet-level">72% (86.4 cm)</strong></span>
+                                    <span>Storage: <strong id="tank2-fleet-vol">5,400 / 7,500 L</strong></span>
+                                </div>
+                                <button class="btn-outline-small" data-goto-tank="2">Inspect Tank 2 →</button>
+                            </div>
+
+                            <!-- Tank 3 Card -->
+                            <div class="tank-fleet-card" data-goto-tank="3">
+                                <div class="tank-fleet-top">
+                                    <div class="tank-fleet-info">
+                                        <h4>Tank 3: Rainwater Cistern</h4>
+                                        <span class="tank-zone-tag">Greenhouse · Runoff Catchment</span>
+                                    </div>
+                                    <span class="status-badge warning" id="tank3-status-pill">Standby</span>
+                                </div>
+                                <div class="tank-progress-bar">
+                                    <div class="tank-progress-fill purple" id="tank3-fleet-bar" style="width: 38%;"></div>
+                                </div>
+                                <div class="tank-fleet-meta">
+                                    <span>Level: <strong id="tank3-fleet-level">38% (30.4 cm)</strong></span>
+                                    <span>Storage: <strong id="tank3-fleet-vol">1,900 / 5,000 L</strong></span>
+                                </div>
+                                <button class="btn-outline-small" data-goto-tank="3">Inspect Tank 3 →</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dual Split Dashboard Actions -->
+                    <div class="dashboard-split-row">
+                        <!-- Left: Irrigation Summary -->
+                        <div class="dash-action-card glass-panel">
+                            <div class="panel-header">
+                                <div>
+                                    <h2><i class="fa-solid fa-droplet gradient-text"></i> Smart Irrigation Advice</h2>
+                                    <p class="section-subtitle">Real-time agronomic decision snapshot</p>
+                                </div>
+                                <button class="btn-secondary-small" data-goto="irrigation">Manage Plan →</button>
+                            </div>
+                            <div class="dash-recommendation-preview">
+                                <div class="rec-preview-header">
+                                    <span id="dash-rec-badge" class="decision-badge safe">IRRIGATE NOW</span>
+                                    <span id="dash-rec-priority" class="priority-badge priority-medium">PRIORITY: MEDIUM</span>
+                                </div>
+                                <p id="dash-rec-reason" class="rec-reason-text">Crop evapotranspiration deficit detected. Soil moisture requires replenishment to sustain flowering vigor.</p>
+                                <div class="rec-quick-stats">
+                                    <div><span>Recommended Water:</span> <strong id="dash-rec-liters">2,450 L</strong></div>
+                                    <div><span>Best Window:</span> <strong id="dash-rec-time">06:00 AM (Morning)</strong></div>
+                                </div>
+                                <div class="rec-preview-actions">
+                                    <button class="btn-primary" data-goto="irrigation"><i class="fa-solid fa-play"></i> Open Irrigation Controls</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Live Telemetry Preview -->
+                        <div class="dash-action-card glass-panel">
+                            <div class="panel-header">
+                                <div>
+                                    <h2><i class="fa-solid fa-chart-line gradient-text"></i> Telemetry & Activity</h2>
+                                    <p class="section-subtitle">Real-time HC-SR04 sensor packets</p>
+                                </div>
+                                <button class="btn-secondary-small" data-goto="data">Open Data Center →</button>
+                            </div>
+                            <div class="telemetry-digest">
+                                <div class="digest-stat-row">
+                                    <div class="digest-stat">
+                                        <span>Current Fill Dynamics</span>
+                                        <strong id="dash-fill-rate">0.00 cm/min</strong>
+                                    </div>
+                                    <div class="digest-stat">
+                                        <span>Water Saved Today</span>
+                                        <strong id="dash-water-saved">540 L (22%)</strong>
+                                    </div>
+                                    <div class="digest-stat">
+                                        <span>Hardware Stream</span>
+                                        <strong id="dash-hardware-status">HC-SR04 (Ready)</strong>
+                                    </div>
+                                </div>
+                                <div class="digest-recent-alert">
+                                    <i class="fa-solid fa-circle-check text-green"></i>
+                                    <span>All sensor telemetry streams healthy. Normal reservoir depth maintained.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================================== -->
+                <!-- PAGE 2: RESERVOIRS & TANKS PAGE                                -->
+                <!-- ============================================================== -->
+                <section class="page-view" id="page-tanks" data-page="tanks">
+                    <!-- Tank Selector Tabs -->
+                    <div class="tank-tabs-container glass-panel">
+                        <div class="tank-tabs-header">
+                            <div>
+                                <h2><i class="fa-solid fa-water gradient-text"></i> Reservoir & Storage Hub</h2>
+                                <p class="section-subtitle">Inspect individual tanks, switch views, calibrate sensors, and monitor holographic levels</p>
+                            </div>
+                            <div class="tank-tab-buttons" role="tablist">
+                                <button class="tank-tab-btn active" data-tank="1" role="tab">
+                                    <i class="fa-solid fa-database"></i> Tank 1 (Main Reservoir)
+                                </button>
+                                <button class="tank-tab-btn" data-tank="2" role="tab">
+                                    <i class="fa-solid fa-faucet"></i> Tank 2 (Secondary Well)
+                                </button>
+                                <button class="tank-tab-btn" data-tank="3" role="tab">
+                                    <i class="fa-solid fa-cloud-rain"></i> Tank 3 (Rainwater)
+                                </button>
+                                <button class="tank-tab-btn" data-tank="all" role="tab">
+                                    <i class="fa-solid fa-table-cells"></i> All Reservoirs Grid
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Single Tank View (Default) -->
+                    <div id="tank-subview-single" class="tank-subview">
+                        <!-- Tank Metadata Banner -->
+                        <div class="tank-metadata-banner glass-panel">
+                            <div class="tank-meta-left">
+                                <div class="tank-icon-pill"><i class="fa-solid fa-water"></i></div>
+                                <div>
+                                    <h3 id="current-tank-title">Tank 1: Main Irrigation Reservoir</h3>
+                                    <span class="tank-meta-subtitle" id="current-tank-desc">Primary supply for automated drip lines · Ultrasonic Sensor HC-SR04</span>
+                                </div>
+                            </div>
+                            <div class="tank-meta-tags">
+                                <span class="feature-badge" id="current-tank-zone">ZONE A · NORTH</span>
+                                <span class="feature-badge safe" id="current-tank-status-badge">ONLINE · SENSING</span>
+                            </div>
+                        </div>
+
+                        <!-- 3D Holographic Tank Vis & Live Telemetry Layout -->
+                        <div class="middle-row" id="tank-monitor">
+                            <!-- 3D Holographic Tank Vis -->
+                            <div class="tank-panel glass-panel">
+                                <div class="panel-header">
+                                    <h2><i class="fa-solid fa-cube gradient-text"></i> 3D Holographic Liquid Cylinder</h2>
+                                    <button class="icon-btn-small" id="hint-btn" title="Press 'M' for Mock Data"><i class="fa-solid fa-circle-info"></i></button>
+                                </div>
+                                <div id="mock-hint" class="hint-text hidden">Press 'M' on your keyboard to toggle simulation stream</div>
+                                <div class="tank-display">
+                                    <div class="tank-container-3d">
+                                        <div class="tank-glass">
+                                            <div class="tank-measurements">
+                                                <span>100%</span>
+                                                <span>75%</span>
+                                                <span>50%</span>
+                                                <span>25%</span>
+                                                <span>0%</span>
+                                            </div>
+                                            <div class="liquid" id="liquid">
+                                                <div class="liquid-surface"></div>
+                                                <div class="liquid-bubbles"></div>
+                                                <div class="liquid-wave wave1"></div>
+                                                <div class="liquid-wave wave2"></div>
+                                            </div>
+                                            <div class="percentage-display">
+                                                <span id="percentage-val-large">0</span>%
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tank-footer">
+                                    <div class="setting-group">
+                                        <label for="max-depth">Tank Depth (cm):</label>
+                                        <input type="number" id="max-depth" value="100" min="10" max="500" class="input-glass">
+                                    </div>
+                                    <div class="tank-capacity-info">
+                                        <span class="label">Est. Reservoir Volume:</span>
+                                        <strong id="tank-vol-val">0 / 10,000 L</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right Column: Live Graph and AI Fill Rate -->
+                            <div class="right-vertical-layout">
+                                <!-- Smart Dynamics Card -->
+                                <div class="ai-card glass-panel">
+                                    <div class="panel-header">
+                                        <h2><i class="fa-solid fa-wand-magic-sparkles gradient-text"></i> Live Dynamics & Fill Rate</h2>
+                                    </div>
+                                    <div class="ai-content">
+                                        <div class="insight-row">
+                                            <span class="label">Current Fill Rate</span>
+                                            <strong id="fill-rate" class="value-text">0.00 cm/min</strong>
+                                        </div>
+                                        <div class="insight-row">
+                                            <span class="label">Usage Trend</span>
+                                            <strong class="value-text trend-down" id="trend-text"><i class="fa-solid fa-arrow-trend-down"></i> Moderating</strong>
+                                        </div>
+                                        <div class="insight-row">
+                                            <span class="label">Daily Est. Consumption</span>
+                                            <strong class="value-text" id="daily-consumption">~320 L <span class="muted-text">(-5% vs yday)</span></strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Water Level Telemetry Graph Card -->
+                                <div class="graph-card glass-panel flex-grow">
+                                    <div class="panel-header">
+                                        <div>
+                                            <h2><i class="fa-solid fa-chart-line gradient-text"></i> Water-Level Telemetry Chart</h2>
+                                            <p class="section-subtitle">Real-time HC-SR04 ultrasonic distance vs. water height</p>
+                                        </div>
+                                        <div class="chart-header-controls">
+                                            <div class="chart-btn-group">
+                                                <button class="chart-filter-btn active" data-range="live">Live</button>
+                                                <button class="chart-filter-btn" data-range="24h">24h</button>
+                                                <button class="chart-filter-btn" data-range="7d">7 Days</button>
+                                            </div>
+                                            <div class="live-indicator"><span class="pulse-dot"></span> Live</div>
+                                        </div>
+                                    </div>
+                                    <div class="chart-wrapper">
+                                        <canvas id="waterChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- All Reservoirs Subview (Comparative) -->
+                    <div id="tank-subview-all" class="tank-subview hidden">
+                        <div class="cumulative-storage-card glass-panel">
+                            <div class="cumulative-stat">
+                                <span>Total Farm Capacity</span>
+                                <strong>22,500 L</strong>
+                                <small>3 Active Reservoirs</small>
+                            </div>
+                            <div class="cumulative-stat">
+                                <span>Total Water Stored</span>
+                                <strong id="cumulative-stored-val">~12,800 L</strong>
+                                <small id="cumulative-stored-pct">57% Total Reserve</small>
+                            </div>
+                            <div class="cumulative-stat">
+                                <span>Current Daily Inflow</span>
+                                <strong>+4,200 L</strong>
+                                <small>Well pump + Rain catchment</small>
+                            </div>
+                            <div class="cumulative-stat">
+                                <span>Total Daily Draw</span>
+                                <strong>-2,450 L</strong>
+                                <small>Automated Irrigation Plan</small>
+                            </div>
+                        </div>
+
+                        <div class="all-tanks-grid">
+                            <!-- Tank 1 Deep Card -->
+                            <div class="detailed-tank-card glass-panel">
+                                <div class="detailed-tank-header">
+                                    <div class="tank-badge-circle"><i class="fa-solid fa-1"></i></div>
+                                    <div>
+                                        <h3>Main Irrigation Reservoir</h3>
+                                        <span class="sub-text">Sensor: HC-SR04 Live Ultrasonic</span>
+                                    </div>
+                                    <span class="status-badge safe">ONLINE</span>
+                                </div>
+                                <div class="detailed-tank-body">
+                                    <div class="tank-visual-mini">
+                                        <div class="mini-liquid-cylinder">
+                                            <div class="mini-liquid-fill" id="all-tank1-fill" style="height: 55%;"></div>
+                                        </div>
+                                        <div class="mini-stats">
+                                            <div class="stat-item">
+                                                <span>Level:</span> <strong id="all-tank1-level">55.0%</strong>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span>Depth:</span> <strong id="all-tank1-depth">55.0 cm / 100 cm</strong>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span>Stored:</span> <strong id="all-tank1-vol">5,500 L / 10,000 L</strong>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span>Valve:</span> <strong>Relay Valve #1 (Ready)</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tank-action-row">
+                                        <button class="btn-primary-small" data-goto-tank="1"><i class="fa-solid fa-eye"></i> Open Detailed Monitor</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tank 2 Deep Card -->
+                            <div class="detailed-tank-card glass-panel">
+                                <div class="detailed-tank-header">
+                                    <div class="tank-badge-circle cyan"><i class="fa-solid fa-2"></i></div>
+                                    <div>
+                                        <h3>Secondary Reserve Well</h3>
+                                        <span class="sub-text">Sensor: Ultrasonic Probe #2</span>
+                                    </div>
+                                    <span class="status-badge safe">STANDBY</span>
+                                </div>
+                                <div class="detailed-tank-body">
+                                    <div class="tank-visual-mini">
+                                        <div class="mini-liquid-cylinder cyan">
+                                            <div class="mini-liquid-fill" id="all-tank2-fill" style="height: 72%;"></div>
+                                        </div>
+                                        <div class="mini-stats">
+                                            <div class="stat-item">
+                                                <span>Level:</span> <strong id="all-tank2-level">72.0%</strong>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span>Depth:</span> <strong id="all-tank2-depth">86.4 cm / 120 cm</strong>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span>Stored:</span> <strong id="all-tank2-vol">5,400 L / 7,500 L</strong>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span>Valve:</span> <strong>Buffer Valve #2 (Closed)</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tank-action-row">
+                                        <button class="btn-primary-small" data-goto-tank="2"><i class="fa-solid fa-eye"></i> Open Detailed Monitor</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tank 3 Deep Card -->
+                            <div class="detailed-tank-card glass-panel">
+                                <div class="detailed-tank-header">
+                                    <div class="tank-badge-circle purple"><i class="fa-solid fa-3"></i></div>
+                                    <div>
+                                        <h3>Rainwater Harvesting Cistern</h3>
+                                        <span class="sub-text">Sensor: Ultrasonic Probe #3</span>
+                                    </div>
+                                    <span class="status-badge warning">STANDBY</span>
+                                </div>
+                                <div class="detailed-tank-body">
+                                    <div class="tank-visual-mini">
+                                        <div class="mini-liquid-cylinder purple">
+                                            <div class="mini-liquid-fill" id="all-tank3-fill" style="height: 38%;"></div>
+                                        </div>
+                                        <div class="mini-stats">
+                                            <div class="stat-item">
+                                                <span>Level:</span> <strong id="all-tank3-level">38.0%</strong>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span>Depth:</span> <strong id="all-tank3-depth">30.4 cm / 80 cm</strong>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span>Stored:</span> <strong id="all-tank3-vol">1,900 L / 5,000 L</strong>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span>Valve:</span> <strong>Catchment Valve #3 (Closed)</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tank-action-row">
+                                        <button class="btn-primary-small" data-goto-tank="3"><i class="fa-solid fa-eye"></i> Open Detailed Monitor</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================================== -->
+                <!-- PAGE 3: TELEMETRY & DATA CENTER                                -->
+                <!-- ============================================================== -->
+                <section class="page-view" id="page-data" data-page="data">
+                    <!-- Data KPI Stats Row -->
+                    <div class="data-kpi-row">
+                        <div class="data-kpi-card glass-panel">
+                            <i class="fa-solid fa-signal data-kpi-icon blue"></i>
+                            <div>
+                                <span>Telemetry Packets Ingested</span>
+                                <strong id="data-total-packets">3,420 pkts</strong>
+                                <small>Sampling: 1 Hz (Web Serial / Stream)</small>
+                            </div>
+                        </div>
+                        <div class="data-kpi-card glass-panel">
+                            <i class="fa-solid fa-droplet data-kpi-icon cyan"></i>
+                            <div>
+                                <span>Water Used Today</span>
+                                <strong id="water-used">0 L</strong>
+                                <small>Sensor-derived consumption</small>
+                            </div>
+                        </div>
+                        <div class="data-kpi-card glass-panel">
+                            <i class="fa-solid fa-leaf data-kpi-icon green"></i>
+                            <div>
+                                <span>Water Saved by AI</span>
+                                <strong id="water-saved">0 L</strong>
+                                <small>~22% conservation vs timer</small>
+                            </div>
+                        </div>
+                        <div class="data-kpi-card glass-panel">
+                            <i class="fa-solid fa-gauge data-kpi-icon purple"></i>
+                            <div>
+                                <span>System Efficiency</span>
+                                <strong id="efficiency">94%</strong>
+                                <small>Next cycle: <span id="next-irrigation">Analyzing</span></small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comprehensive Telemetry Chart -->
+                    <div class="data-chart-card glass-panel">
+                        <div class="panel-header">
+                            <div>
+                                <h2><i class="fa-solid fa-chart-area gradient-text"></i> Multi-Point Sensor Telemetry Graph</h2>
+                                <p class="section-subtitle">Continuous HC-SR04 ultrasonic distance, water depth, and consumption dynamics</p>
+                            </div>
+                            <div class="chart-header-controls">
+                                <div class="chart-btn-group">
+                                    <button class="data-chart-btn active" data-range="live">Live Stream</button>
+                                    <button class="data-chart-btn" data-range="24h">Last 24 Hours</button>
+                                    <button class="data-chart-btn" data-range="7d">Last 7 Days</button>
+                                </div>
+                                <div class="live-indicator"><span class="pulse-dot"></span> Live Sync</div>
+                            </div>
+                        </div>
+                        <div class="chart-wrapper tall">
+                            <canvas id="dataTelemetryChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Telemetry Data Records Table Panel with CSV Export -->
+                    <div class="telemetry-table-panel glass-panel">
+                        <div class="panel-header">
+                            <div>
+                                <h2><i class="fa-solid fa-table-list gradient-text"></i> Telemetry Data Records & Event Logs</h2>
+                                <p class="section-subtitle">Real-time incoming packets with ultrasonic distance, calibrated height, and status tags</p>
+                            </div>
+                            <div class="table-actions-toolbar">
+                                <div class="search-box">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                    <input type="text" id="telemetry-search-input" placeholder="Search timestamp, tank, or status..." class="input-glass search-field">
+                                </div>
+                                <select id="telemetry-tank-filter" class="input-glass filter-select">
+                                    <option value="all">All Tanks</option>
+                                    <option value="1">Tank 1 (Main)</option>
+                                    <option value="2">Tank 2 (Secondary)</option>
+                                    <option value="3">Tank 3 (Rainwater)</option>
+                                </select>
+                                <button id="export-telemetry-csv-btn" class="btn-primary-small">
+                                    <i class="fa-solid fa-file-arrow-down"></i> Export to CSV
+                                </button>
+                                <button id="refresh-telemetry-btn" class="icon-btn-small" title="Refresh Table">
+                                    <i class="fa-solid fa-arrows-rotate"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table" id="telemetry-log-table">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>Tank Name</th>
+                                        <th>Distance (cm)</th>
+                                        <th>Water Level (cm)</th>
+                                        <th>Percentage (%)</th>
+                                        <th>Available Volume</th>
+                                        <th>Source / Stream</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="telemetry-log-tbody">
+                                    <!-- Dynamic rows populated via JS -->
+                                    <tr>
+                                        <td>Just now</td>
+                                        <td>Tank 1: Main Reservoir</td>
+                                        <td>45.0 cm</td>
+                                        <td>55.0 cm</td>
+                                        <td>55%</td>
+                                        <td>5,500 L</td>
+                                        <td><span class="mode-badge ai">HC-SR04</span></td>
+                                        <td><span class="badge-pill optimal">Normal</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Raw Serial Telemetry Terminal -->
+                    <div class="raw-telemetry-box glass-panel">
+                        <div class="raw-header">
+                            <span><i class="fa-solid fa-terminal"></i> Live Hardware Telemetry Packet Console:</span>
+                            <span class="raw-time" id="data-raw-time">--:--:--</span>
+                        </div>
+                        <code id="data-raw-packet">Waiting for serial packet... (Format: [distance_cm],[level_cm])</code>
+                    </div>
+                </section>
+
+                <!-- ============================================================== -->
+                <!-- PAGE 4: FARM MANAGEMENT                                        -->
+                <!-- ============================================================== -->
+                <section class="page-view" id="page-farm" data-page="farm">
+                    <div class="feature-row" id="farm-profile">
+                        <!-- Farm Configuration Form -->
+                        <div class="farm-profile-card glass-panel">
+                            <div class="panel-header">
+                                <div>
+                                    <h2><i class="fa-solid fa-wheat-awn gradient-text"></i> Farm & Agricultural Configuration</h2>
+                                    <p class="section-subtitle">Configure agricultural parameters for AI water modeling</p>
+                                </div>
+                                <span class="feature-badge">FARM PROFILE</span>
+                            </div>
+                            <div class="form-grid">
+                                <div class="form-field">
+                                    <label for="farm-select">Farm Name</label>
+                                    <select id="farm-select" class="input-glass">
+                                        <option value="farm-1">Green Valley Farm</option>
+                                        <option value="farm-2">Sunrise Field</option>
+                                        <option value="farm-3">Hope Agriculture</option>
+                                        <option value="farm-4">Evergreen Agro Plot</option>
+                                    </select>
+                                </div>
+                                <div class="form-field">
+                                    <label for="crop-select">Crop Type</label>
+                                    <select id="crop-select" class="input-glass">
+                                        <option value="tomato" selected>Tomato</option>
+                                        <option value="rice">Rice (Paddy)</option>
+                                        <option value="cotton">Cotton</option>
+                                        <option value="groundnut">Groundnut</option>
+                                        <option value="maize">Maize (Corn)</option>
+                                        <option value="wheat">Wheat</option>
+                                        <option value="sugarcane">Sugarcane</option>
+                                    </select>
+                                </div>
+                                <div class="form-field">
+                                    <label for="stage-select">Growth Stage</label>
+                                    <select id="stage-select" class="input-glass">
+                                        <option value="Seedling">Seedling</option>
+                                        <option value="Vegetative">Vegetative</option>
+                                        <option value="Flowering" selected>Flowering</option>
+                                        <option value="Fruiting">Fruiting</option>
+                                        <option value="Maturity">Maturity</option>
+                                    </select>
+                                </div>
+                                <div class="form-field">
+                                    <label for="area-input">Farm Area (acres)</label>
+                                    <input id="area-input" class="input-glass" type="number" value="2.5" min="0.1" max="100" step="0.1">
+                                </div>
+                                <div class="form-field">
+                                    <label for="soil-select">Soil Type</label>
+                                    <select id="soil-select" class="input-glass">
+                                        <option value="loamy" selected>Loamy Soil (Optimal)</option>
+                                        <option value="clay">Clay Soil (High Retention)</option>
+                                        <option value="sandy">Sandy Soil (Fast Drain)</option>
+                                        <option value="silt">Silt Loam</option>
+                                    </select>
+                                </div>
+                                <div class="form-field">
+                                    <label for="soil-moisture-slider">Soil Moisture: <span id="soil-moisture-label">38%</span></label>
+                                    <input id="soil-moisture-slider" type="range" min="5" max="95" value="38" class="range-slider">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Water Budget Card -->
+                        <div class="water-budget-card glass-panel">
+                            <div class="panel-header">
+                                <div>
+                                    <h2><i class="fa-solid fa-gauge-high gradient-text"></i> Water Budget Allocation</h2>
+                                    <p class="section-subtitle">Real-time comparison: Available Reservoir vs Crop Need</p>
+                                </div>
+                                <span class="feature-badge">BUDGET RATIO</span>
+                            </div>
+                            <div class="budget-main">
+                                <div>
+                                    <span class="label">Available Reservoir</span>
+                                    <strong id="available-water">0 L</strong>
+                                    <small class="sub-text">Current tank volume</small>
+                                </div>
+                                <div>
+                                    <span class="label">Predicted Crop Need</span>
+                                    <strong id="required-water">2,450 L</strong>
+                                    <small class="sub-text">Daily requirement</small>
+                                </div>
+                            </div>
+                            <div class="budget-bar"><span id="budget-bar-fill"></span></div>
+                            <p id="budget-message" class="muted-text">Waiting for sensor stream...</p>
+                        </div>
+                    </div>
+
+                    <!-- Crop Reference Guide Card -->
+                    <div class="agronomic-card glass-panel">
+                        <div class="panel-header">
+                            <div>
+                                <h2><i class="fa-solid fa-book-open gradient-text"></i> Agronomic Soil & Crop Reference</h2>
+                                <p class="section-subtitle">FAO-56 standard coefficients and water depletion parameters</p>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Crop Name</th>
+                                        <th>Baseline Daily Need (L/acre)</th>
+                                        <th>Flowering Stage Factor (Kc)</th>
+                                        <th>Root Depth (m)</th>
+                                        <th>Depletion Fraction (p)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Tomato</strong></td>
+                                        <td>980 L / acre</td>
+                                        <td>1.15</td>
+                                        <td>0.7 - 1.2 m</td>
+                                        <td>0.40 (Sensitive)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Rice (Paddy)</strong></td>
+                                        <td>1,680 L / acre</td>
+                                        <td>1.30</td>
+                                        <td>0.5 - 0.9 m</td>
+                                        <td>0.20 (High demand)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Cotton</strong></td>
+                                        <td>1,560 L / acre</td>
+                                        <td>1.20</td>
+                                        <td>1.0 - 1.7 m</td>
+                                        <td>0.65 (Drought resilient)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Maize (Corn)</strong></td>
+                                        <td>1,120 L / acre</td>
+                                        <td>1.20</td>
+                                        <td>0.8 - 1.5 m</td>
+                                        <td>0.55 (Moderate)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================================== -->
+                <!-- PAGE 5: IRRIGATION PLANNING & EXECUTION                        -->
+                <!-- ============================================================== -->
+                <section class="page-view" id="page-irrigation" data-page="irrigation">
+                    <!-- Irrigation Planning & Smart Recommendation -->
+                    <div class="irrigation-card glass-panel" id="irrigation">
+                        <div class="panel-header">
+                            <div>
+                                <h2><i class="fa-solid fa-droplet gradient-text"></i> Irrigation Planning & Decision Engine</h2>
+                                <p class="section-subtitle">Smart decision engine: Evaluates reservoir depth, soil moisture, crop stage, and atmospheric conditions</p>
+                            </div>
+                            <div class="recommendation-header-badges">
+                                <span id="recommendation-priority" class="priority-badge priority-medium">PRIORITY: MEDIUM</span>
+                                <span id="recommendation-badge" class="decision-badge safe">ANALYZING</span>
+                            </div>
+                        </div>
+                        <div class="recommendation-grid">
+                            <div class="decision-main">
+                                <div class="decision-icon" id="decision-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+                                <div class="decision-text-content">
+                                    <span class="label">Recommended Irrigation Action</span>
+                                    <h3 id="recommendation-title">Analyzing System State</h3>
+                                    <p id="recommendation-reason">Evaluating water level, soil moisture coefficient, and weather conditions...</p>
+                                </div>
+                            </div>
+                            <div class="decision-factors">
+                                <div><span>Target Crop</span><strong id="decision-crop">Tomato</strong></div>
+                                <div><span>Crop Water Need</span><strong id="decision-need">2,450 L</strong></div>
+                                <div><span>Water Available</span><strong id="decision-available">0 L</strong></div>
+                                <div><span>Recommended Amount</span><strong id="decision-rec-amount">2,450 L</strong></div>
+                                <div><span>Recommended Time</span><strong id="decision-rec-time">06:00 AM (Early Morning)</strong></div>
+                                <div><span>Soil Moisture Factor</span><strong id="decision-soil-factor">38% (Moderate)</strong></div>
+                            </div>
+                        </div>
+                        <div class="decision-actions">
+                            <button class="btn-primary" id="irrigate-btn"><i class="fa-solid fa-play"></i> Start Irrigation</button>
+                            <button class="btn-secondary" id="schedule-btn"><i class="fa-regular fa-clock"></i> Schedule Plan</button>
+                            <button class="btn-secondary" id="auto-mode-btn"><i class="fa-solid fa-robot"></i> <span id="auto-mode-text">AI Auto-Irrigation: ON</span></button>
+                        </div>
+                    </div>
+
+                    <!-- Irrigation History & Completed Cycles -->
+                    <div class="analytics-card glass-panel" id="analytics">
+                        <div class="history-table-container">
+                            <div class="history-table-header">
+                                <div>
+                                    <h3><i class="fa-solid fa-clock-rotate-left gradient-text"></i> Automated & Manual Irrigation History</h3>
+                                    <p class="section-subtitle">Archived cycles recorded to local database with volume and duration tags</p>
+                                </div>
+                                <button id="refresh-history-btn" class="icon-btn-small" title="Refresh Log"><i class="fa-solid fa-arrows-rotate"></i></button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="data-table" id="irrigation-history-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Timestamp</th>
+                                            <th>Target Crop</th>
+                                            <th>Water Delivered</th>
+                                            <th>Duration</th>
+                                            <th>Trigger Mode</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="irrigation-history-body">
+                                        <tr>
+                                            <td>Today, 06:15 AM</td>
+                                            <td>Tomato (Flowering)</td>
+                                            <td>2,450 L</td>
+                                            <td>35 mins</td>
+                                            <td><span class="mode-badge ai">AI Auto</span></td>
+                                            <td><span class="badge-pill optimal">Completed</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Yesterday, 06:30 AM</td>
+                                            <td>Tomato (Flowering)</td>
+                                            <td>2,400 L</td>
+                                            <td>32 mins</td>
+                                            <td><span class="mode-badge ai">AI Auto</span></td>
+                                            <td><span class="badge-pill optimal">Completed</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================================== -->
+                <!-- PAGE 6: AI INSIGHTS & ML PREDICTION                            -->
+                <!-- ============================================================== -->
+                <section class="page-view" id="page-ai" data-page="ai">
+                    <div class="feature-row" id="ai-engine">
+                        <!-- AI Model Architecture Card -->
+                        <div class="ai-engine-card glass-panel">
+                            <div class="panel-header">
+                                <div>
+                                    <h2><i class="fa-solid fa-brain gradient-text"></i> AI Insights & Random Forest Pipeline</h2>
+                                    <p class="section-subtitle">Random Forest Regressor multi-parameter irrigation model</p>
+                                </div>
+                                <span class="feature-badge ai">RANDOM FOREST MODEL</span>
+                            </div>
+                            <div class="model-pipeline">
+                                <div class="pipeline-node"><i class="fa-solid fa-database"></i><span>Sensors + Farm Inputs</span></div>
+                                <i class="fa-solid fa-arrow-right pipeline-arrow"></i>
+                                <div class="pipeline-node"><i class="fa-solid fa-code-branch"></i><span>Feature Extraction</span></div>
+                                <i class="fa-solid fa-arrow-right pipeline-arrow"></i>
+                                <div class="pipeline-node"><i class="fa-solid fa-brain"></i><span>Random Forest Regressor</span></div>
+                                <i class="fa-solid fa-arrow-right pipeline-arrow"></i>
+                                <div class="pipeline-node"><i class="fa-solid fa-droplet"></i><span>Water & Schedule Optimization</span></div>
+                            </div>
+                            
+                            <div class="model-inputs">
+                                <span><b>Tank Level</b><em id="ai-tank-level">0%</em></span>
+                                <span><b>Target Crop</b><em id="ai-crop">Tomato</em></span>
+                                <span><b>Growth Stage</b><em id="ai-stage">Flowering</em></span>
+                                <span><b>Farm Area</b><em id="ai-area">2.5 acres</em></span>
+                                <span><b>Soil Moisture</b><em id="ai-soil">38%</em></span>
+                                <span><b>Temperature</b><em id="ai-temp">32 °C</em></span>
+                                <span><b>Humidity</b><em id="ai-humidity">55%</em></span>
+                                <span><b>Rain Probability</b><em id="ai-rain">18%</em></span>
+                            </div>
+
+                            <div class="ai-explanation-box" id="ai-explanation">
+                                <h4><i class="fa-solid fa-circle-nodes"></i> Model Rationale & Explanation</h4>
+                                <p id="ai-explanation-text">Crop evapotranspiration ($ET_c$) calculated at 5.4 mm/day. Current soil moisture deficit requires supplemental irrigation to maintain root-zone field capacity without inducing runoff.</p>
+                            </div>
+                        </div>
+
+                        <!-- Feature Importance & Metrics Card -->
+                        <div class="ai-feature-card glass-panel">
+                            <div class="panel-header">
+                                <div>
+                                    <h2><i class="fa-solid fa-sliders gradient-text"></i> Model Feature Weights</h2>
+                                    <p class="section-subtitle">Gini impurity feature contributions</p>
+                                </div>
+                                <span class="feature-badge">ACCURACY: 96.2%</span>
+                            </div>
+                            <div class="feature-weight-list">
+                                <div class="weight-item">
+                                    <div class="weight-label"><span>Soil Moisture Deficit</span><strong>35%</strong></div>
+                                    <div class="weight-bar"><div class="weight-fill" style="width: 35%;"></div></div>
+                                </div>
+                                <div class="weight-item">
+                                    <div class="weight-label"><span>Crop Growth Stage & Kc</span><strong>22%</strong></div>
+                                    <div class="weight-bar"><div class="weight-fill cyan" style="width: 22%;"></div></div>
+                                </div>
+                                <div class="weight-item">
+                                    <div class="weight-label"><span>Ambient Temperature & ET₀</span><strong>18%</strong></div>
+                                    <div class="weight-bar"><div class="weight-fill purple" style="width: 18%;"></div></div>
+                                </div>
+                                <div class="weight-item">
+                                    <div class="weight-label"><span>Reservoir Water Reserve</span><strong>15%</strong></div>
+                                    <div class="weight-bar"><div class="weight-fill blue" style="width: 15%;"></div></div>
+                                </div>
+                                <div class="weight-item">
+                                    <div class="weight-label"><span>Relative Humidity & Solar</span><strong>10%</strong></div>
+                                    <div class="weight-bar"><div class="weight-fill green" style="width: 10%;"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================================== -->
+                <!-- PAGE 7: WEATHER & ATMOSPHERIC INPUTS                           -->
+                <!-- ============================================================== -->
+                <section class="page-view" id="page-weather" data-page="weather">
+                    <div class="weather-card glass-panel" id="weather">
+                        <div class="panel-header">
+                            <div>
+                                <h2><i class="fa-solid fa-cloud-sun gradient-text"></i> Weather & Atmospheric Telemetry</h2>
+                                <p class="section-subtitle">Live environmental variables impacting agricultural evapotranspiration</p>
+                            </div>
+                            <span class="feature-badge" id="weather-source-badge"><i class="fa-solid fa-satellite-dish"></i> OPEN-METEO</span>
+                        </div>
+                        <div class="weather-grid">
+                            <div class="weather-stat-card">
+                                <i class="fa-solid fa-temperature-half weather-stat-icon red"></i>
+                                <div>
+                                    <span>Temperature</span>
+                                    <strong id="weather-temp">32 °C</strong>
+                                </div>
+                            </div>
+                            <div class="weather-stat-card">
+                                <i class="fa-solid fa-droplet weather-stat-icon blue"></i>
+                                <div>
+                                    <span>Relative Humidity</span>
+                                    <strong id="weather-humidity">55%</strong>
+                                </div>
+                            </div>
+                            <div class="weather-stat-card">
+                                <i class="fa-solid fa-cloud-showers-heavy weather-stat-icon cyan"></i>
+                                <div>
+                                    <span>Precipitation (24h)</span>
+                                    <strong id="weather-rainfall">0 mm</strong>
+                                </div>
+                            </div>
+                            <div class="weather-stat-card">
+                                <i class="fa-solid fa-cloud-rain weather-stat-icon purple"></i>
+                                <div>
+                                    <span>Rain Probability</span>
+                                    <strong id="weather-rain-prob">18%</strong>
+                                </div>
+                            </div>
+                            <div class="weather-stat-card">
+                                <i class="fa-solid fa-wind weather-stat-icon teal"></i>
+                                <div>
+                                    <span>Wind Speed</span>
+                                    <strong id="weather-wind">12 km/h</strong>
+                                </div>
+                            </div>
+                            <div class="weather-stat-card">
+                                <i class="fa-solid fa-sun weather-stat-icon yellow"></i>
+                                <div>
+                                    <span>Solar Radiation</span>
+                                    <strong id="weather-solar">680 W/m²</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="weather-forecast-banner">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span>Favorable atmospheric window for scheduled morning irrigation. Evaporation rate is low.</span>
+                        </div>
+                    </div>
+
+                    <!-- 5-Day Agro Forecast Grid -->
+                    <div class="agro-forecast-panel glass-panel">
+                        <div class="panel-header">
+                            <div>
+                                <h2><i class="fa-solid fa-calendar-days gradient-text"></i> 5-Day Agricultural Weather Forecast</h2>
+                                <p class="section-subtitle">Forecasted evaporation demand and precipitation likelihood</p>
+                            </div>
+                        </div>
+                        <div class="forecast-cards-grid">
+                            <div class="forecast-day-card">
+                                <strong>Today</strong>
+                                <i class="fa-solid fa-sun yellow"></i>
+                                <span class="temp">32° / 22°C</span>
+                                <small>Rain: 18% (0 mm)</small>
+                                <span class="badge-pill optimal">Ideal Window</span>
+                            </div>
+                            <div class="forecast-day-card">
+                                <strong>Tomorrow</strong>
+                                <i class="fa-solid fa-cloud-sun cyan"></i>
+                                <span class="temp">31° / 21°C</span>
+                                <small>Rain: 25% (0.5 mm)</small>
+                                <span class="badge-pill optimal">Morning Run</span>
+                            </div>
+                            <div class="forecast-day-card">
+                                <strong>Saturday</strong>
+                                <i class="fa-solid fa-cloud-showers-heavy blue"></i>
+                                <span class="temp">27° / 19°C</span>
+                                <small>Rain: 70% (14 mm)</small>
+                                <span class="badge-pill warning">Skip Irrigation</span>
+                            </div>
+                            <div class="forecast-day-card">
+                                <strong>Sunday</strong>
+                                <i class="fa-solid fa-cloud blue"></i>
+                                <span class="temp">28° / 20°C</span>
+                                <small>Rain: 30% (2 mm)</small>
+                                <span class="badge-pill optimal">Soil Check</span>
+                            </div>
+                            <div class="forecast-day-card">
+                                <strong>Monday</strong>
+                                <i class="fa-solid fa-sun yellow"></i>
+                                <span class="temp">33° / 23°C</span>
+                                <small>Rain: 10% (0 mm)</small>
+                                <span class="badge-pill optimal">High Demand</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================================== -->
+                <!-- PAGE 8: SYSTEM ALERTS & NOTIFICATIONS                          -->
+                <!-- ============================================================== -->
+                <section class="page-view" id="page-alerts" data-page="alerts">
+                    <div class="alerts-panel glass-panel" id="alerts">
+                        <div class="panel-header">
+                            <div>
+                                <h2><i class="fa-solid fa-bell gradient-text"></i> System Alerts & Notification Center</h2>
+                                <p class="section-subtitle">Real-time alerts for low water, critical thresholds, soil moisture stress, and pump operations</p>
+                            </div>
+                            <div class="alerts-header-actions">
+                                <div class="alert-filter-group">
+                                    <button class="alert-filter-btn active" data-filter="all">All</button>
+                                    <button class="alert-filter-btn" data-filter="critical">Critical</button>
+                                    <button class="alert-filter-btn" data-filter="warning">Warning</button>
+                                    <button class="alert-filter-btn" data-filter="info">Info</button>
+                                </div>
+                                <button class="icon-btn-small" id="clear-alerts" title="Clear Event Log"><i class="fa-solid fa-trash-can"></i></button>
+                            </div>
+                        </div>
+                        <div class="alerts-list" id="alerts-list">
+                            <!-- Alert items populate here -->
+                            <div class="alert-item empty-state" id="empty-alerts">No active warnings. System running within optimal parameters.</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================================== -->
+                <!-- PAGE 9: ARDUINO / HARDWARE DIAGNOSTICS                         -->
+                <!-- ============================================================== -->
+                <section class="page-view" id="page-device" data-page="device">
+                    <div class="device-panel glass-panel" id="device-status">
+                        <div class="panel-header">
+                            <div>
+                                <h2><i class="fa-solid fa-microchip gradient-text"></i> Arduino & Hardware Device Diagnostics</h2>
+                                <p class="section-subtitle">Microcontroller connection, telemetry packet inspection, and sensor diagnostics</p>
+                            </div>
+                            <span id="device-badge" class="feature-badge">READY</span>
+                        </div>
+                        <div class="device-grid">
+                            <div class="device-card">
+                                <div class="device-card-header">
+                                    <i class="fa-solid fa-server"></i>
+                                    <span>Microcontroller</span>
+                                </div>
+                                <strong id="device-board-name">Arduino Uno / ESP32</strong>
+                                <p class="device-sub" id="device-board-status">Status: Ready for Serial Stream</p>
+                            </div>
+                            <div class="device-card">
+                                <div class="device-card-header">
+                                    <i class="fa-solid fa-ruler"></i>
+                                    <span>Ultrasonic Sensor</span>
+                                </div>
+                                <strong>HC-SR04 (9600 Baud)</strong>
+                                <p class="device-sub" id="device-sensor-status">Trig Pin: 9 | Echo Pin: 10</p>
+                            </div>
+                            <div class="device-card">
+                                <div class="device-card-header">
+                                    <i class="fa-solid fa-water"></i>
+                                    <span>Soil Moisture Sensor</span>
+                                </div>
+                                <strong>Capacitive v2.0 (Analog)</strong>
+                                <p class="device-sub" id="device-soil-status">Calibrated: 0-1023 ADC</p>
+                            </div>
+                            <div class="device-card">
+                                <div class="device-card-header">
+                                    <i class="fa-solid fa-faucet-drip"></i>
+                                    <span>Irrigation Relay</span>
+                                </div>
+                                <strong id="device-pump-state">Relay Valve: STANDBY</strong>
+                                <p class="device-sub">Digital Pin: 7 (Active High)</p>
+                            </div>
+                        </div>
+                        <div class="raw-telemetry-box">
+                            <div class="raw-header">
+                                <span><i class="fa-solid fa-terminal"></i> Latest Serial Telemetry Packet:</span>
+                                <span class="raw-time" id="device-last-time">--:--:--</span>
+                            </div>
+                            <code id="device-raw-packet">Waiting for packet... (e.g., 15.2,84.8)</code>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================================== -->
+                <!-- PAGE 10: SYSTEM SETTINGS                                       -->
+                <!-- ============================================================== -->
+                <section class="page-view" id="page-settings" data-page="settings">
+                    <div class="settings-panel glass-panel" id="settings">
+                        <div class="panel-header">
+                            <div>
+                                <h2><i class="fa-solid fa-sliders gradient-text"></i> System Configuration & Parameters</h2>
+                                <p class="section-subtitle">Configured hardware limits, serial communications, and algorithms</p>
+                            </div>
+                            <span class="feature-badge">CONFIGURATION</span>
+                        </div>
+                        <div class="settings-grid">
+                            <div>
+                                <span>Reservoir Capacity</span>
+                                <strong>10,000 Liters (Tank 1)</strong>
+                            </div>
+                            <div>
+                                <span>Ultrasonic Sensor</span>
+                                <strong>HC-SR04 (Speed: 343 m/s)</strong>
+                            </div>
+                            <div>
+                                <span>Serial Baud Rate</span>
+                                <strong>9600 bps (8-N-1)</strong>
+                            </div>
+                            <div>
+                                <span>AI Decision Model</span>
+                                <strong>Random Forest Regressor</strong>
+                            </div>
+                            <div>
+                                <span>High Warning Level</span>
+                                <strong>85% Reservoir Depth</strong>
+                            </div>
+                            <div>
+                                <span>Critical Overflow Alert</span>
+                                <strong>95% Reservoir Depth</strong>
+                            </div>
+                            <div>
+                                <span>Low Water Threshold</span>
+                                <strong>20% Reservoir Depth</strong>
+                            </div>
+                            <div>
+                                <span>Serial Format</span>
+                                <strong>CSV (Distance, Level\n)</strong>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+    </div>
+    
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+    
+    <audio id="alert-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto" loop></audio>
+    <script src="app.js"></script>
+</body>
+</html>
