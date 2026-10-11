@@ -67,11 +67,11 @@ def seed_database():
             print("[Seed] Creating water telemetry readings...")
             now = datetime.utcnow()
             readings = [
-                WaterReading(tank_id=1, distance_cm=45.0, water_level_percent=55.0, water_volume_liters=5500.0, status='NORMAL', recorded_at=now - timedelta(hours=10)),
-                WaterReading(tank_id=1, distance_cm=42.0, water_level_percent=58.0, water_volume_liters=5800.0, status='NORMAL', recorded_at=now - timedelta(hours=7)),
-                WaterReading(tank_id=1, distance_cm=38.0, water_level_percent=62.0, water_volume_liters=6200.0, status='NORMAL', recorded_at=now - timedelta(hours=4)),
-                WaterReading(tank_id=1, distance_cm=35.0, water_level_percent=65.0, water_volume_liters=6500.0, status='NORMAL', recorded_at=now - timedelta(hours=2)),
-                WaterReading(tank_id=1, distance_cm=32.0, water_level_percent=68.0, water_volume_liters=6800.0, status='NORMAL', recorded_at=now)
+                WaterReading(tank_id=1, distance_cm=45.0, water_level_percent=55.0, water_volume_liters=5500.0, status='SIMULATED', recorded_at=now - timedelta(hours=10)),
+                WaterReading(tank_id=1, distance_cm=42.0, water_level_percent=58.0, water_volume_liters=5800.0, status='SIMULATED', recorded_at=now - timedelta(hours=7)),
+                WaterReading(tank_id=1, distance_cm=38.0, water_level_percent=62.0, water_volume_liters=6200.0, status='SIMULATED', recorded_at=now - timedelta(hours=4)),
+                WaterReading(tank_id=1, distance_cm=35.0, water_level_percent=65.0, water_volume_liters=6500.0, status='SIMULATED', recorded_at=now - timedelta(hours=2)),
+                WaterReading(tank_id=1, distance_cm=32.0, water_level_percent=68.0, water_volume_liters=6800.0, status='SIMULATED', recorded_at=now)
             ]
             for r in readings:
                 db.session.add(r)

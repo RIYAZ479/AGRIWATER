@@ -14,6 +14,8 @@ import requests
 from flask import current_app
 
 logger = logging.getLogger("AgriWaterWeatherService")
+DEFAULT_LATITUDE = 13.7563
+DEFAULT_LONGITUDE = 100.5018
 
 # WMO Weather Interpretation Codes (WW)
 WMO_WEATHER_CODES = {
@@ -55,7 +57,27 @@ class WeatherService:
     @classmethod
     def get_weather_condition_text(cls, code):
         """Maps WMO weather code to readable string description."""
-        return WMO_WEATHER_CODES.get(int(code), "Partly Cloudy")
+        try:
+            return WMO_WEATHER_CODES.get(int(code), "Partly Cloudy")
+        except (TypeError, ValueError):
+            return "Partly Cloudy"
+
+    @classmethod
+    def normalize_coordinates(cls, lat=None, lon=None):
+        """Normalize lat/lon values to valid floats with safe defaults."""
+        try:
+            if lat is None:
+                lat = DEFAULT_LATITUDE
+            else:
+                lat = float(lat)
+            if lon is None:
+                lon = DEFAULT_LONGITUDE
+            else:
+                lon = float(lon)
+        except (TypeError, ValueError):
+            lat = DEFAULT_LATITUDE
+            lon = DEFAULT_LONGITUDE
+        return lat, lon
 
     @classmethod
     def get_cached_weather(cls, cache_key):
@@ -85,11 +107,13 @@ class WeatherService:
         cls._cache.clear()
 
     @classmethod
-    def fetch_open_meteo_live(cls, lat=13.7563, lon=100.5018, timeout=6):
+    def fetch_open_meteo_live(cls, lat=None, lon=None, timeout=6):
         """
         Directly queries the Open-Meteo Forecast API for real-time agricultural telemetry.
         Returns parsed weather dictionary or raises Exception.
         """
+        lat, lon = cls.normalize_coordinates(lat, lon)
+
         url = "https://api.open-meteo.com/v1/forecast"
         params = {
             "latitude": round(lat, 4),
@@ -185,14 +209,20 @@ class WeatherService:
         # Determine coordinates from parameter or application configuration
         if lat is None or lon is None:
             try:
-                lat = float(current_app.config.get('DEFAULT_FARM_LATITUDE', 13.7563))
-                lon = float(current_app.config.get('DEFAULT_FARM_LONGITUDE', 100.5018))
+                lat = float(current_app.config["DEFAULT_FARM_LATITUDE"])
+                lon = float(current_app.config["DEFAULT_FARM_LONGITUDE"])
                 cache_ttl = int(current_app.config.get('WEATHER_CACHE_SECONDS', 900))
             except Exception:
-                lat = 13.7563
-                lon = 100.5018
+                lat = DEFAULT_LATITUDE
+                lon = DEFAULT_LONGITUDE
                 cache_ttl = 900
         else:
+            try:
+                lat = float(lat)
+                lon = float(lon)
+            except (TypeError, ValueError):
+                lat = DEFAULT_LATITUDE
+                lon = DEFAULT_LONGITUDE
             cache_ttl = 900
 
         cache_key = f"{round(lat, 4)}_{round(lon, 4)}"

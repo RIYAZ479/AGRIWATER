@@ -699,6 +699,7 @@ function processSensorData(distance, level) {
     let percentage = Math.max(0, Math.min(rawPercentage, 100));
 
     // 1. Update Numerical Metric Displays
+    if (liquidEl) liquidEl.style.opacity = '1';
     if (distanceVal) distanceVal.textContent = distance.toFixed(1);
     if (waterLevelVal) waterLevelVal.textContent = level.toFixed(1);
     if (percentageLarge) percentageLarge.textContent = Math.round(percentage);
@@ -1140,18 +1141,70 @@ async function pollFastTelemetry() {
                 setBackendOnlineState(true);
             }
             const reading = res.data;
-            const dist = reading.distance_cm || 45.0;
-            const pct = reading.water_level_percent || 55.0;
+            if (
+                reading.available === false ||
+                reading.distance_cm == null ||
+                reading.water_level_percent == null
+            ) {
+                setWaterUnavailable();
+                return;
+            }
+            const dist = reading.distance_cm;
+            const pct = reading.water_level_percent;
             const level = (pct / 100.0) * maxTankDepth;
 
             processSensorData(dist, level);
             lastSensorLevel = level;
             lastSensorDistance = dist;
+            if (reading.is_simulated === true) {
+                if (statusBadge) {
+                    statusBadge.className = 'status-badge warning';
+                    statusBadge.textContent = 'SIMULATED DATA';
+                }
+                if (deviceBadge) {
+                    deviceBadge.textContent = 'SIMULATED SAMPLE';
+                    deviceBadge.style.color = 'var(--accent-amber)';
+                }
+                if (deviceBoardStatus) {
+                    deviceBoardStatus.textContent = 'Status: Displaying seeded simulated water data';
+                }
+            } else if (reading.is_simulated === null) {
+                if (deviceBadge) {
+                    deviceBadge.textContent = 'SOURCE UNVERIFIED';
+                    deviceBadge.style.color = 'var(--accent-amber)';
+                }
+                if (deviceBoardStatus) {
+                    deviceBoardStatus.textContent = 'Status: Water reading origin is not recorded';
+                }
+            }
         }
     } catch (err) {
         if (isBackendOnline) {
             setBackendOnlineState(false);
         }
+    }
+}
+
+function setWaterUnavailable() {
+    if (waterLevelVal) waterLevelVal.textContent = '—';
+    if (distanceVal) distanceVal.textContent = '—';
+    if (percentageLarge) percentageLarge.textContent = '—';
+    if (statusBadge) {
+        statusBadge.className = 'status-badge warning';
+        statusBadge.textContent = 'UNAVAILABLE';
+    }
+    if (liquidEl) liquidEl.style.opacity = '0';
+    if (dashAvailWater) dashAvailWater.textContent = 'Unavailable';
+    if (availableWaterEl) availableWaterEl.textContent = 'Unavailable';
+    if (tankVolVal) tankVolVal.textContent = 'Unavailable';
+    if (decisionAvailable) decisionAvailable.textContent = 'Unavailable';
+    if (aiTankLevel) aiTankLevel.textContent = 'Unavailable';
+    if (deviceBadge) {
+        deviceBadge.textContent = 'NO WATER READING';
+        deviceBadge.style.color = 'var(--accent-amber)';
+    }
+    if (deviceBoardStatus) {
+        deviceBoardStatus.textContent = 'Status: No water reading is available from the backend';
     }
 }
 
