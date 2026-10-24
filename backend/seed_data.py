@@ -39,15 +39,21 @@ def seed_database():
             db.session.commit()
 
         # 3. Seed Crops
-        if Crop.query.count() == 0:
+        if Crop.query.count() < 7:
             print("[Seed] Creating crops...")
-            crops = [
+            existing_crop_names = {c.crop_name for c in Crop.query.all()}
+            crops_to_seed = [
                 Crop(farm_id=1, crop_name="Tomato", crop_type="Vegetable", growth_stage="Flowering", planting_date=date(2026, 7, 1)),
                 Crop(farm_id=1, crop_name="Rice (Paddy)", crop_type="Cereal", growth_stage="Vegetative", planting_date=date(2026, 7, 15)),
-                Crop(farm_id=1, crop_name="Cotton", crop_type="Fiber", growth_stage="Flowering", planting_date=date(2026, 6, 20))
+                Crop(farm_id=1, crop_name="Cotton", crop_type="Fiber", growth_stage="Flowering", planting_date=date(2026, 6, 20)),
+                Crop(farm_id=1, crop_name="Sugarcane", crop_type="Cash Crop", growth_stage="Fruiting", planting_date=date(2026, 5, 10)),
+                Crop(farm_id=1, crop_name="Maize (Corn)", crop_type="Cereal", growth_stage="Vegetative", planting_date=date(2026, 7, 5)),
+                Crop(farm_id=1, crop_name="Wheat", crop_type="Cereal", growth_stage="Flowering", planting_date=date(2026, 6, 1)),
+                Crop(farm_id=1, crop_name="Groundnut", crop_type="Legume", growth_stage="Vegetative", planting_date=date(2026, 7, 12))
             ]
-            for c in crops:
-                db.session.add(c)
+            for c in crops_to_seed:
+                if c.crop_name not in existing_crop_names:
+                    db.session.add(c)
             db.session.commit()
 
         # 4. Seed Tank

@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from app import db
 from app.models.alert import Alert
+from app.utils.auth import token_required
 
 alerts_bp = Blueprint('alerts', __name__)
 
@@ -55,8 +56,9 @@ def create_alert():
 
 @alerts_bp.route('/alerts', methods=['DELETE'])
 @alerts_bp.route('/alerts/clear', methods=['DELETE'])
+@token_required
 def clear_alerts():
-    """Clear alerts from database."""
+    """Clear alerts from database (Requires authentication)."""
     farm_id = request.args.get('farm_id', type=int)
     if farm_id:
         Alert.query.filter_by(farm_id=farm_id).delete()

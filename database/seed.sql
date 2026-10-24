@@ -27,7 +27,11 @@ ON DUPLICATE KEY UPDATE `id` = `id`;
 INSERT INTO `crops` (`id`, `farm_id`, `crop_name`, `crop_type`, `growth_stage`, `planting_date`, `created_at`) VALUES
 (1, 1, 'Tomato', 'Vegetable', 'Flowering', '2026-07-01', '2026-08-01 09:00:00'),
 (2, 1, 'Rice (Paddy)', 'Cereal', 'Vegetative', '2026-07-15', '2026-08-01 09:05:00'),
-(3, 1, 'Cotton', 'Fiber', 'Flowering', '2026-06-20', '2026-08-01 09:10:00')
+(3, 1, 'Cotton', 'Fiber', 'Flowering', '2026-06-20', '2026-08-01 09:10:00'),
+(4, 1, 'Sugarcane', 'Cash Crop', 'Fruiting', '2026-05-10', '2026-08-01 09:15:00'),
+(5, 1, 'Maize (Corn)', 'Cereal', 'Vegetative', '2026-07-05', '2026-08-01 09:20:00'),
+(6, 1, 'Wheat', 'Cereal', 'Flowering', '2026-06-01', '2026-08-01 09:25:00'),
+(7, 1, 'Groundnut', 'Legume', 'Vegetative', '2026-07-12', '2026-08-01 09:30:00')
 ON DUPLICATE KEY UPDATE `id` = `id`;
 
 -- -----------------------------------------------------------------------------

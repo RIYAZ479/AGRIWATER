@@ -1,6 +1,7 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, g
 from app import db
 from app.models.user import User
+from app.utils.auth import generate_auth_token, token_required
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -63,11 +64,28 @@ def login():
             'error': 'Invalid email or password'
         }), 401
 
+    token = generate_auth_token(user.id, expires_in=86400)
+
     return jsonify({
         'success': True,
         'message': 'Authentication successful',
         'data': {
             'user': user.to_dict(),
-            'token': f"mock-jwt-token-user-{user.id}"
+            'token': token,
+            'token_type': 'Bearer',
+            'expires_in': 86400
         }
     })
+
+@auth_bp.route('/auth/me', methods=['GET'])
+@token_required
+def get_current_user_profile():
+    """
+    Retrieve authenticated user profile for the active session token.
+    Requires: Authorization: Bearer <token>
+    """
+    return jsonify({
+        'success': True,
+        'data': g.current_user.to_dict()
+    })
+

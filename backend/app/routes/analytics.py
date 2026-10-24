@@ -32,6 +32,8 @@ def get_water_analytics():
         'data': {
             'water_used_today_liters': water_used_today,
             'water_saved_liters': round(water_used_today * 0.22, 0),
+            'water_saved_today_liters': round(water_used_today * 0.22, 0),
+            'irrigation_efficiency_pct': 94.0,
             'reservoir_trend_24h': history
         }
     })

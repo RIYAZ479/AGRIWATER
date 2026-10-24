@@ -1,6 +1,7 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, g
 from app import db
 from app.models.farm import Farm
+from app.utils.auth import token_required
 
 farms_bp = Blueprint('farms', __name__)
 
@@ -30,8 +31,9 @@ def get_farm(farm_id):
     })
 
 @farms_bp.route('/farms', methods=['POST'])
+@token_required
 def create_farm():
-    """Create a new farm profile."""
+    """Create a new farm profile (Requires authentication)."""
     data = request.get_json() or {}
     farm_name = data.get('farm_name') or data.get('name')
     if not farm_name:
@@ -40,7 +42,7 @@ def create_farm():
             'error': 'farm_name is required'
         }), 400
 
-    user_id = data.get('user_id', 1)
+    user_id = g.current_user.id if hasattr(g, 'current_user') and g.current_user else data.get('user_id', 1)
     farm = Farm(
         user_id=user_id,
         farm_name=farm_name,
@@ -57,8 +59,9 @@ def create_farm():
     }), 201
 
 @farms_bp.route('/farms/<int:farm_id>', methods=['PUT'])
+@token_required
 def update_farm(farm_id):
-    """Update an existing farm profile."""
+    """Update an existing farm profile (Requires authentication)."""
     farm = Farm.query.get(farm_id)
     if not farm:
         return jsonify({
@@ -85,8 +88,9 @@ def update_farm(farm_id):
     })
 
 @farms_bp.route('/farms/<int:farm_id>', methods=['DELETE'])
+@token_required
 def delete_farm(farm_id):
-    """Delete a farm profile."""
+    """Delete a farm profile (Requires authentication)."""
     farm = Farm.query.get(farm_id)
     if not farm:
         return jsonify({
@@ -101,3 +105,4 @@ def delete_farm(farm_id):
         'success': True,
         'message': f'Farm {farm_id} deleted successfully'
     })
+

@@ -17,6 +17,13 @@ class Tank(db.Model):
 
     def to_dict(self):
         latest = self.readings.order_by(WaterReading.recorded_at.desc()).first()
+        try:
+            from flask import current_app
+            depth_by_tank = current_app.config.get('TANK_DEPTHS_CM', {})
+            height_cm = depth_by_tank.get(self.id, current_app.config.get('DEFAULT_TANK_DEPTH_CM', 30.0))
+        except Exception:
+            height_cm = 30.0
+
         return {
             'id': self.id,
             'farm_id': self.farm_id,
@@ -24,6 +31,8 @@ class Tank(db.Model):
             'name': self.tank_name, # Alias
             'capacity_liters': self.capacity_liters,
             'capacity': self.capacity_liters, # Alias
+            'height_cm': height_cm,
+            'tank_depth_cm': height_cm,
             'current_level_percent': latest.water_level_percent if latest else self.current_level_percent,
             'current_level': latest.water_level_percent if latest else self.current_level_percent,
             'created_at': self.created_at.isoformat() if self.created_at else None,
@@ -50,6 +59,8 @@ class WaterReading(db.Model):
             'distance_cm': round(self.distance_cm, 1),
             'water_level_percent': round(self.water_level_percent, 1),
             'water_volume_liters': round(self.water_volume_liters, 0),
+            'available_liters': round(self.water_volume_liters, 0),
+            'water_level_cm': round((30.0 - self.distance_cm) if self.distance_cm <= 30.0 else (self.water_level_percent / 100.0 * 30.0), 1),
             'status': self.status,
             'recorded_at': self.recorded_at.isoformat() if self.recorded_at else None,
             'timestamp': self.recorded_at.isoformat() if self.recorded_at else None # Alias

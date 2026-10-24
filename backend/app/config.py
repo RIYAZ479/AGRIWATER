@@ -51,7 +51,7 @@ class Config:
     
     # 2. Build MySQL URI from environment variables
     mysql_uri = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}"
-    sqlite_uri = f"sqlite:///{BASE_DIR / 'agriwater.db'}"
+    sqlite_uri = f"sqlite:///{BASE_DIR / 'instance' / 'agriwater.db'}"
 
     if env_db_url and 'mysql' in env_db_url:
         SQLALCHEMY_DATABASE_URI = env_db_url

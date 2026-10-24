@@ -163,14 +163,14 @@ def run_integration_tests():
         try:
             payload = {
                 "tank_id": 1,
-                "distance_cm": 15.0,
+                "distance_cm": 4.5,
                 "water_level_percent": 85.0,
                 "water_volume_liters": 8500.0
             }
             r = client.post('/api/water/readings', json=payload)
             res = r.get_json()
             passed = r.status_code == 201 and res.get('success') and res['data']['water_level_percent'] == 85.0
-            print_test("POST /api/water/readings (DB Insert)", passed, f"- Ingested: Dist 15cm -> 85% (8,500 L)")
+            print_test("POST /api/water/readings (DB Insert)", passed, f"- Ingested: Dist 4.5cm -> 85% (8,500 L)")
             if not passed: all_passed = False
         except Exception as e:
             print_test("POST /api/water/readings (DB Insert)", False, f"- Error: {e}")

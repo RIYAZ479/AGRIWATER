@@ -15,6 +15,7 @@ class WaterUsage(db.Model):
             'id': self.id,
             'farm_id': self.farm_id,
             'water_used_liters': round(self.water_used_liters, 0),
+            'water_delivered_liters': round(self.water_used_liters, 0),
             'usage_date': self.usage_date.isoformat() if self.usage_date else None,
             'purpose': self.purpose
         }

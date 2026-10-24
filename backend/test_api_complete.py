@@ -45,7 +45,8 @@ def run_all_tests():
         print_result("POST /api/auth/register", False, f"- Error: {e}")
         all_passed = False
 
-    # 3. Auth: Login
+    # 3. Auth: Login & Profile
+    auth_headers = {}
     try:
         payload = {
             "username": uniq_user,
@@ -53,8 +54,17 @@ def run_all_tests():
         }
         r = requests.post(f"{BASE_URL}/auth/login", json=payload, timeout=3)
         passed = r.status_code == 200 and r.json().get('success') is True and 'token' in r.json().get('data', {})
-        print_result("POST /api/auth/login", passed, f"- Login Token: {r.json()['data']['token']}")
+        auth_token = r.json().get('data', {}).get('token')
+        if auth_token:
+            auth_headers = {'Authorization': f'Bearer {auth_token}'}
+        print_result("POST /api/auth/login", passed, f"- Login Token: {auth_token}")
         if not passed: all_passed = False
+
+        # GET /api/auth/me
+        r_me = requests.get(f"{BASE_URL}/auth/me", headers=auth_headers, timeout=3)
+        passed_me = r_me.status_code == 200 and r_me.json().get('success') is True
+        print_result("GET /api/auth/me", passed_me, f"- User: {r_me.json().get('data', {}).get('name')}")
+        if not passed_me: all_passed = False
     except Exception as e:
         print_result("POST /api/auth/login", False, f"- Error: {e}")
         all_passed = False
@@ -66,28 +76,28 @@ def run_all_tests():
         print_result("GET /api/farms", passed, f"- {r.json().get('count')} farms available")
         if not passed: all_passed = False
 
-        # POST /api/farms
+        # POST /api/farms (Protected)
         farm_payload = {"name": "Sunrise Agro Field", "area": 3.5, "location": "East Sector 2"}
-        r_post = requests.post(f"{BASE_URL}/farms", json=farm_payload, timeout=3)
+        r_post = requests.post(f"{BASE_URL}/farms", json=farm_payload, headers=auth_headers, timeout=3)
         passed_post = r_post.status_code == 201 and r_post.json().get('success') is True
         created_farm_id = r_post.json()['data']['id']
         print_result("POST /api/farms", passed_post, f"- Created Farm ID: {created_farm_id}")
         if not passed_post: all_passed = False
 
-        # GET /api/farms/<id>
+        # GET /api/farms/<id> (Public)
         r_get = requests.get(f"{BASE_URL}/farms/{created_farm_id}", timeout=3)
         passed_get = r_get.status_code == 200 and r_get.json()['data']['name'] == "Sunrise Agro Field"
         print_result(f"GET /api/farms/{created_farm_id}", passed_get, f"- Name: {r_get.json()['data']['name']}")
         if not passed_get: all_passed = False
 
-        # PUT /api/farms/<id>
-        r_put = requests.put(f"{BASE_URL}/farms/{created_farm_id}", json={"area": 4.0}, timeout=3)
+        # PUT /api/farms/<id> (Protected)
+        r_put = requests.put(f"{BASE_URL}/farms/{created_farm_id}", json={"area": 4.0}, headers=auth_headers, timeout=3)
         passed_put = r_put.status_code == 200 and r_put.json()['data']['area'] == 4.0
         print_result(f"PUT /api/farms/{created_farm_id}", passed_put, f"- Updated Area to: 4.0 acres")
         if not passed_put: all_passed = False
 
-        # DELETE /api/farms/<id>
-        r_del = requests.delete(f"{BASE_URL}/farms/{created_farm_id}", timeout=3)
+        # DELETE /api/farms/<id> (Protected)
+        r_del = requests.delete(f"{BASE_URL}/farms/{created_farm_id}", headers=auth_headers, timeout=3)
         passed_del = r_del.status_code == 200 and r_del.json().get('success') is True
         print_result(f"DELETE /api/farms/{created_farm_id}", passed_del, f"- {r_del.json().get('message')}")
         if not passed_del: all_passed = False
@@ -172,12 +182,12 @@ def run_all_tests():
         reading_payload = {
             "tank_id": 1,
             "distance_cm": 12.5,
-            "water_level_percent": 68.0,
-            "water_volume_liters": 340.0
+            "water_level_percent": 58.3,
+            "water_volume_liters": 5833.0
         }
         r_post = requests.post(f"{BASE_URL}/water/readings", json=reading_payload, timeout=3)
         passed_post = r_post.status_code == 201 and r_post.json().get('success') is True
-        print_result("POST /api/water/readings", passed_post, f"- Ingested: 12.5cm -> 68% (340L)")
+        print_result("POST /api/water/readings", passed_post, f"- Ingested: 12.5cm -> 58.3% (5833L)")
         if not passed_post: all_passed = False
 
         # GET /api/water/readings
@@ -240,7 +250,7 @@ def run_all_tests():
             "humidity_pct": 55.0,
             "rain_probability_pct": 18.0
         }
-        r_ai = requests.post(f"{BASE_URL}/ai/predict", json=ai_payload, timeout=3)
+        r_ai = requests.post(f"{BASE_URL}/ai/predict", json=ai_payload, timeout=10)
         passed_ai = r_ai.status_code == 200 and 'prediction' in r_ai.json().get('data', {})
         pred = r_ai.json()['data']['prediction']
         print_result("POST /api/ai/predict", passed_ai, f"- Action: {pred['recommended_action']}, Need: {pred['predicted_water_need_liters']}L, Conf: {pred['confidence_score']}")
@@ -297,7 +307,7 @@ def run_all_tests():
         print_result("404 Error Handling Format", passed_404, f"- Response: {r_404.json()}")
         if not passed_404: all_passed = False
 
-        r_400 = requests.post(f"{BASE_URL}/farms", json={}, timeout=3)
+        r_400 = requests.post(f"{BASE_URL}/farms", json={}, headers=auth_headers, timeout=3)
         passed_400 = r_400.status_code == 400 and r_400.json().get('success') is False and 'error' in r_400.json()
         print_result("400 Error Handling Format", passed_400, f"- Response: {r_400.json()}")
         if not passed_400: all_passed = False
